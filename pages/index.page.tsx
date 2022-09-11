@@ -163,7 +163,7 @@ const Home: NextPage = () => {
                         <div className={styles.actionsContainer}>
                             <div>Actions:</div>
                           {entities[selectedEntity].actions.map((action) => (
-                            <div>
+                            <div key={action}>
                               <button onClick={() => handleEntityAction(action, rowIndex, colIndex, entityId)}>{action}</button>
                             </div>
                           ))}
