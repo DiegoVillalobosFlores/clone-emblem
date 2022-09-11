@@ -19,10 +19,6 @@
   cursor: pointer;
   text-align: center;
 
-  &:hover {
-    background-color: white;
-  }
-
   &_container {
     width: auto;
     display: flex;
@@ -30,6 +26,10 @@
 
   &_grass {
     background-color: green;
+    &:hover {
+      background-color: white;
+      color: black;
+    }
   }
 
   &_water {
