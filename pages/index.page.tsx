@@ -12,7 +12,7 @@ const Home: NextPage = () => {
       </Head>
 
       <main className={styles.main}>
-        Main
+        <div>Tile</div>
       </main>
     </div>
   )
