@@ -17,6 +17,7 @@
   width: 36px;
   border: 1px solid white;
   cursor: pointer;
+  text-align: center;
 
   &:hover {
     background-color: white;
@@ -36,7 +37,24 @@
   }
 
   &_selected {
+    color: black;
     background-color: white;
+  }
+}
+
+.entityMenuContainer {
+  display: flex;
+  gap: 16px;
+}
+
+.entityContainer {
+  border: 1px solid skyblue;
+  padding: 10px;
+  cursor: pointer;
+
+  &_selected {
+    color: black;
+    background-color: skyblue;
   }
 }
 
