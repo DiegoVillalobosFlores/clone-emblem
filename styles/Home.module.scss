@@ -12,6 +12,34 @@
   align-items: center;
 }
 
+.tile {
+  height: 36px;
+  width: 36px;
+  border: 1px solid white;
+  cursor: pointer;
+
+  &:hover {
+    background-color: white;
+  }
+
+  &_container {
+    width: auto;
+    display: flex;
+  }
+
+  &_grass {
+    background-color: green;
+  }
+
+  &_water {
+    background-color: aqua;
+  }
+
+  &_selected {
+    background-color: white;
+  }
+}
+
 @media (max-width: 600px) {
   .grid {
     width: 100%;
