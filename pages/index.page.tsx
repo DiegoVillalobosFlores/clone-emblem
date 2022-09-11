@@ -4,6 +4,8 @@ import styles from '../styles/Home.module.scss'
 import cc from 'classcat'
 import {useMemo, useState} from "react";
 
+type Action = 'Move' | 'Attack'
+
 type Entity = {
   id: string;
   name: string;
@@ -13,6 +15,7 @@ type Entity = {
   health: number;
   defense: number;
   type: string;
+  actions: Array<Action>
 }
 
 type Entities = Record<string, Entity>
@@ -31,7 +34,8 @@ const Home: NextPage = () => {
       attack: 1,
       health: 30,
       defense: 5,
-      type: 'player'
+      type: 'player',
+      actions: ['Move', 'Attack']
     },
     Luigi: {
       id: 'Luigi',
@@ -41,7 +45,8 @@ const Home: NextPage = () => {
       attack: 5,
       health: 30,
       defense: 2,
-      type: 'CPU'
+      type: 'CPU',
+      actions: ['Move', 'Attack']
     }}
   )
 
@@ -63,13 +68,8 @@ const Home: NextPage = () => {
     return tempGrid
   }, [entities])
 
-
   const handleGridClick = (yPos: number, xPos: number, entityId: Entity["id"] | null) => {
     setSelectedPos([yPos, xPos])
-    if(!entityId && selectedEntity) setEntities({...entities, [selectedEntity]: {
-      ...entities[selectedEntity],
-        currentPos: [yPos, xPos]
-      }})
     if(entityId) setSelectedEntity(entityId)
   }
 
@@ -83,6 +83,17 @@ const Home: NextPage = () => {
   const handleSelectEntity = (entityId: Entity["id"]) => {
     if(selectedEntity === entityId) setSelectedEntity(null)
     else setSelectedEntity(entityId)
+  }
+
+  const handleEntityAction = (action: Action, x: number, y: number) => {
+    if(action === "Move") handleEntityMove(x, y)
+  }
+
+  const handleEntityMove = (x: number, y: number) => {
+    if(selectedEntity) setEntities({...entities, [selectedEntity]: {
+        ...entities[selectedEntity],
+        currentPos: [x, y]
+      }})
   }
 
   return (
@@ -100,19 +111,40 @@ const Home: NextPage = () => {
         <div>
           Selected Entity: {selectedEntity}
         </div>
-        {grid.map((row, rowIndex) => (
-          <div key={`grid_${rowIndex}_0`} className={cc([styles.tile, styles.tile_container])}>
-            {row.map((entityId, colIndex) => (
-              <div
-                key={`grid_${rowIndex}_${colIndex}`}
-                className={cc([styles.tile, styles.tile_grass, isSelectedPos(rowIndex, colIndex) && styles.tile_selected])}
-                onClick={() => handleGridClick(rowIndex, colIndex, entityId)}
-              >
-                {entityId && entities[entityId] && <>{entities[entityId].name[0].toUpperCase()}</>}
+        <div className={styles.gridContainer}>
+          <div>
+            {grid.map((row, rowIndex) => (
+              <div key={`grid_${rowIndex}_0`} className={cc([styles.tile, styles.tile_container])}>
+                {row.map((entityId, colIndex) => (
+                  <div
+                    key={`grid_${rowIndex}_${colIndex}`}
+                    className={cc([styles.tile, styles.tile_grass, isSelectedPos(rowIndex, colIndex) && styles.tile_selected])}
+                    onClick={() => handleGridClick(rowIndex, colIndex, entityId)}
+                  >
+                    {entityId && entities[entityId] && <>{entities[entityId].name[0].toUpperCase()}</>}
+                    {selectedPos?.[0] === rowIndex && selectedPos[1] === colIndex && selectedEntity && selectedEntity !== entityId &&
+                        <>{entities[selectedEntity].name[0].toUpperCase()}</>
+                    }
+                    {selectedPos?.[0] === rowIndex &&
+                      selectedPos[1] === colIndex &&
+                      selectedEntity &&
+                      selectedEntity !== entityId &&
+                      entities[selectedEntity] &&
+                        <div className={styles.actionsContainer}>
+                            <div>Actions:</div>
+                          {entities[selectedEntity].actions.map((action) => (
+                            <div>
+                              <button onClick={() => handleEntityAction(action, rowIndex, colIndex)}>{action}</button>
+                            </div>
+                          ))}
+                        </div>
+                    }
+                  </div>
+                ))}
               </div>
             ))}
           </div>
-        ))}
+        </div>
         <h6>Available Units:</h6>
         <div className={styles.entityMenuContainer}>
           {Object.values(entities).map(entity =>

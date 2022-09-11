@@ -12,6 +12,20 @@
   align-items: center;
 }
 
+.gridContainer {
+  display: flex;
+  gap: 20px;
+}
+
+.actionsContainer {
+  background-color: black;
+  border: 1px gold solid;
+  padding: 10px;
+  position: absolute;
+  margin-left: 34px;
+  color: gold;
+}
+
 .tile {
   height: 36px;
   width: 36px;
