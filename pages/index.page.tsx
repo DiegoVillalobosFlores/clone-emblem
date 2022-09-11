@@ -4,7 +4,7 @@ import styles from '../styles/Home.module.scss'
 import cc from 'classcat'
 import {useMemo, useState} from "react";
 
-type Action = 'Move' | 'Attack'
+type Action = 'Move' | 'Attack' | 'Select'
 
 type Entity = {
   id: string;
@@ -33,9 +33,9 @@ const Home: NextPage = () => {
       movement: 5,
       attack: 1,
       health: 30,
-      defense: 5,
+      defense: 4,
       type: 'player',
-      actions: ['Move', 'Attack']
+      actions: ['Move', 'Attack', 'Select']
     },
     Luigi: {
       id: 'Luigi',
@@ -46,7 +46,7 @@ const Home: NextPage = () => {
       health: 30,
       defense: 2,
       type: 'CPU',
-      actions: ['Move', 'Attack']
+      actions: ['Move', 'Attack', 'Select']
     }}
   )
 
@@ -70,7 +70,7 @@ const Home: NextPage = () => {
 
   const handleGridClick = (yPos: number, xPos: number, entityId: Entity["id"] | null) => {
     setSelectedPos([yPos, xPos])
-    if(entityId) setSelectedEntity(entityId)
+    if(!selectedEntity && entityId) setSelectedEntity(entityId)
   }
 
   const isSelectedPos = (yPos: number, xPos: number) => {
@@ -85,15 +85,46 @@ const Home: NextPage = () => {
     else setSelectedEntity(entityId)
   }
 
-  const handleEntityAction = (action: Action, x: number, y: number) => {
-    if(action === "Move") handleEntityMove(x, y)
+  const handleEntityAction = (action: Action, x: number, y: number, targetEntityId: string | null) => {
+    if(action === "Move") moveEntity(x, y)
+    if(action === "Attack" && targetEntityId) attackEntity(targetEntityId)
+    if(action === "Select") selectEntity(targetEntityId)
   }
 
-  const handleEntityMove = (x: number, y: number) => {
+  const moveEntity = (x: number, y: number) => {
     if(selectedEntity) setEntities({...entities, [selectedEntity]: {
         ...entities[selectedEntity],
         currentPos: [x, y]
       }})
+  }
+
+  const selectEntity = (targetEntityId: string | null) => {
+    setSelectedEntity(targetEntityId)
+  }
+
+  const attackEntity = (targetEntityId: string) => {
+    if(selectedEntity && targetEntityId !== selectedEntity) {
+      const attackingEntity = entities[selectedEntity];
+      const targetEntity = entities[targetEntityId];
+
+      if(targetEntity.health === 0) return
+
+      const health = Math.max(
+        0,
+        targetEntity.health - (
+          Math.max(
+            0,
+            attackingEntity.attack - targetEntity.defense
+          )
+        )
+      )
+
+      setEntities({...entities,
+        [targetEntityId]: {
+          ...entities[targetEntityId],
+          health
+        }})
+    }
   }
 
   return (
@@ -122,19 +153,18 @@ const Home: NextPage = () => {
                     onClick={() => handleGridClick(rowIndex, colIndex, entityId)}
                   >
                     {entityId && entities[entityId] && <>{entities[entityId].name[0].toUpperCase()}</>}
-                    {selectedPos?.[0] === rowIndex && selectedPos[1] === colIndex && selectedEntity && selectedEntity !== entityId &&
+                    {selectedPos?.[0] === rowIndex && selectedPos[1] === colIndex && selectedEntity && selectedEntity !== entityId && !entityId &&
                         <>{entities[selectedEntity].name[0].toUpperCase()}</>
                     }
                     {selectedPos?.[0] === rowIndex &&
                       selectedPos[1] === colIndex &&
                       selectedEntity &&
-                      selectedEntity !== entityId &&
                       entities[selectedEntity] &&
                         <div className={styles.actionsContainer}>
                             <div>Actions:</div>
                           {entities[selectedEntity].actions.map((action) => (
                             <div>
-                              <button onClick={() => handleEntityAction(action, rowIndex, colIndex)}>{action}</button>
+                              <button onClick={() => handleEntityAction(action, rowIndex, colIndex, entityId)}>{action}</button>
                             </div>
                           ))}
                         </div>
