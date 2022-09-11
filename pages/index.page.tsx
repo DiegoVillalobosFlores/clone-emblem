@@ -64,14 +64,13 @@ const Home: NextPage = () => {
   }, [entities])
 
 
-  const handleGridClick = (yPos: number, xPos: number) => {
+  const handleGridClick = (yPos: number, xPos: number, entityId: Entity["id"] | null) => {
     setSelectedPos([yPos, xPos])
-    const entity = getEntityByPos(yPos, xPos);
-    if(!entity && selectedEntity) setEntities({...entities, [selectedEntity]: {
+    if(!entityId && selectedEntity) setEntities({...entities, [selectedEntity]: {
       ...entities[selectedEntity],
         currentPos: [yPos, xPos]
       }})
-    if(entity) setSelectedEntity(entity.id)
+    if(entityId) setSelectedEntity(entityId)
   }
 
   const isSelectedPos = (yPos: number, xPos: number) => {
@@ -103,13 +102,13 @@ const Home: NextPage = () => {
         </div>
         {grid.map((row, rowIndex) => (
           <div key={`grid_${rowIndex}_0`} className={cc([styles.tile, styles.tile_container])}>
-            {row.map((value, colIndex) => (
+            {row.map((entityId, colIndex) => (
               <div
                 key={`grid_${rowIndex}_${colIndex}`}
                 className={cc([styles.tile, styles.tile_grass, isSelectedPos(rowIndex, colIndex) && styles.tile_selected])}
-                onClick={() => handleGridClick(rowIndex, colIndex)}
+                onClick={() => handleGridClick(rowIndex, colIndex, entityId)}
               >
-                {value && entities[value] && <>{entities[value].name[0].toUpperCase()}</>}
+                {entityId && entities[entityId] && <>{entities[entityId].name[0].toUpperCase()}</>}
               </div>
             ))}
           </div>
