@@ -45,12 +45,16 @@ const Home: NextPage = () => {
     }}
   )
 
+  const getEntityByPos = (x: number, y: number) => {
+    return Object.values(entities).find(({id,currentPos}) => currentPos?.[0] === x && currentPos[1] === y)
+  }
+
   const grid = useMemo(() => {
     const tempGrid: Array<Array<string | null>> = []
     for(let x = 0 ; x < 8 ; x++) {
       tempGrid[x] = []
       for(let y = 0 ; y < 8 ; y++) {
-        const entity = Object.values(entities).find(({id,currentPos}) => currentPos?.[0] === x && currentPos[1] === y)
+        const entity = getEntityByPos(x, y)
         if(entity) tempGrid[x][y] = entity.id
         else tempGrid[x][y] = null
       }
@@ -62,10 +66,12 @@ const Home: NextPage = () => {
 
   const handleGridClick = (yPos: number, xPos: number) => {
     setSelectedPos([yPos, xPos])
-    if(selectedEntity) setEntities({...entities, [selectedEntity]: {
+    const entity = getEntityByPos(yPos, xPos);
+    if(!entity && selectedEntity) setEntities({...entities, [selectedEntity]: {
       ...entities[selectedEntity],
         currentPos: [yPos, xPos]
       }})
+    if(entity) setSelectedEntity(entity.id)
   }
 
   const isSelectedPos = (yPos: number, xPos: number) => {
