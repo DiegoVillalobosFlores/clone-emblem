@@ -20,10 +20,27 @@
 .actionsContainer {
   background-color: black;
   border: 1px gold solid;
-  padding: 10px;
   position: absolute;
   margin-left: 34px;
   color: gold;
+}
+
+.actionButtonContainer {
+  width: 100%;
+}
+
+.actionsLabel {
+  padding: 8px;
+}
+
+.actionButton {
+  width: 100%;
+  padding: 10px;
+  cursor: pointer;
+  border-left: none;
+  border-right: none;
+  border-top: 1px gold solid;
+  border-bottom: 1px gold solid;
 }
 
 .tile {

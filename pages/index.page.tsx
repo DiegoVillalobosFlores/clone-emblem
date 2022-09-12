@@ -161,10 +161,13 @@ const Home: NextPage = () => {
                       selectedEntity &&
                       entities[selectedEntity] &&
                         <div className={styles.actionsContainer}>
-                            <div>Actions:</div>
+                            <div className={styles.actionsLabel}>Actions:</div>
                           {entities[selectedEntity].actions.map((action) => (
-                            <div key={action}>
-                              <button onClick={() => handleEntityAction(action, rowIndex, colIndex, entityId)}>{action}</button>
+                            <div key={action} className={styles.actionButtonContainer}>
+                              <button
+                                onClick={() => handleEntityAction(action, rowIndex, colIndex, entityId)}
+                                className={styles.actionButton}
+                              >{action}</button>
                             </div>
                           ))}
                         </div>
