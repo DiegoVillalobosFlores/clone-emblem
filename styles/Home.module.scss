@@ -46,6 +46,7 @@
   border: 1px solid white;
   cursor: pointer;
   text-align: center;
+  transition: background-color 100ms ease-in-out;
 
   &_container {
     width: auto;
@@ -73,6 +74,9 @@
 .entityMenuContainer {
   display: flex;
   gap: 16px;
+  flex-wrap: wrap;
+  justify-items: center;
+  justify-content: center;
 }
 
 .entityContainer {
@@ -84,6 +88,14 @@
     color: black;
     background-color: skyblue;
   }
+
+  &_empty {
+    margin-bottom: 20px;
+  }
+}
+
+.entityInput {
+  width: 100%;
 }
 
 @media (max-width: 600px) {

@@ -2,7 +2,7 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 import styles from '../styles/Home.module.scss'
 import cc from 'classcat'
-import {useMemo, useState} from "react";
+import {ChangeEvent, useMemo, useState} from "react";
 
 type Action = 'Move' | 'Attack' | 'Select'
 
@@ -21,6 +21,18 @@ type Entity = {
 type Entities = Record<string, Entity>
 
 type Position = Array<number> | null
+
+const defaultEntity: Entity = {
+  id: '',
+  name: '',
+  currentPos: null,
+  movement: 0,
+  attack: 0,
+  health: 0,
+  defense: 0,
+  type: 'player',
+  actions: ['Move', 'Attack', 'Select']
+}
 
 const Home: NextPage = () => {
   const [selectedPos, setSelectedPos] = useState<Position>(null);
@@ -49,6 +61,21 @@ const Home: NextPage = () => {
       actions: ['Move', 'Attack', 'Select']
     }}
   )
+  const [tempEntity, setTempEntity] = useState<Partial<Entity>>(defaultEntity)
+
+  const handleTempEntityChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const property = e?.currentTarget?.name;
+    const value = e?.currentTarget?.value;
+
+    fillTempEntity(property, value)
+  }
+
+  const fillTempEntity = (property: string, value: string | number) => {
+    setTempEntity({
+      ...tempEntity,
+      [property]: value
+    })
+  }
 
   const getEntityByPos = (x: number, y: number) => {
     return Object.values(entities).find(({id,currentPos}) => currentPos?.[0] === x && currentPos[1] === y)
@@ -127,6 +154,22 @@ const Home: NextPage = () => {
     }
   }
 
+  const handleAddEntity = () => {
+    const newId = tempEntity.id;
+
+    if(!newId || newId === '') return;
+    if(tempEntity.name === '') return;
+
+    const newEntity: Entity = tempEntity as Entity;
+
+    setEntities({
+      ...entities,
+      [newId]: newEntity
+    })
+
+    setTempEntity(defaultEntity)
+  }
+
   return (
     <div className={styles.container}>
       <Head>
@@ -153,7 +196,12 @@ const Home: NextPage = () => {
                     onClick={() => handleGridClick(rowIndex, colIndex, entityId)}
                   >
                     {entityId && entities[entityId] && <>{entities[entityId].name[0].toUpperCase()}</>}
-                    {selectedPos?.[0] === rowIndex && selectedPos[1] === colIndex && selectedEntity && selectedEntity !== entityId && !entityId &&
+                    {selectedPos?.[0] === rowIndex &&
+                      selectedPos[1] === colIndex &&
+                      selectedEntity &&
+                      entities[selectedEntity] &&
+                      selectedEntity !== entityId &&
+                      !entityId &&
                         <>{entities[selectedEntity].name[0].toUpperCase()}</>
                     }
                     {selectedPos?.[0] === rowIndex &&
@@ -178,6 +226,20 @@ const Home: NextPage = () => {
           </div>
         </div>
         <h6>Available Units:</h6>
+        <fieldset
+          className={cc([styles.entityContainer, styles.entityContainer_empty, selectedEntity === 'New Entity' && styles.entityContainer_selected])}
+          onClick={() => setSelectedEntity('New Entity')}
+        >
+          <div><input className={styles.entityInput} onChange={handleTempEntityChange} type={"text"} name={'id'} placeholder={'id'}/></div>
+          <div><input className={styles.entityInput} onChange={handleTempEntityChange} type={"text"} name={'name'} placeholder={'name'}/></div>
+          <div><input className={styles.entityInput} onChange={handleTempEntityChange} type={"number"} name={'health'} max={100} min={0} placeholder={'health'}/></div>
+          <div><input className={styles.entityInput} onChange={handleTempEntityChange} type={"number"} name={'attack'} max={50} min={1} placeholder={'attack'}/></div>
+          <div><input className={styles.entityInput} onChange={handleTempEntityChange} type={"number"} name={'defense'} max={50} min={1} placeholder={'defense'}/></div>
+          <div><input className={styles.entityInput} onChange={handleTempEntityChange} type={"number"} name={'movement'} max={8} min={1} placeholder={'movement'}/></div>
+          <div>
+            <button onClick={handleAddEntity}>Add Entity</button>
+          </div>
+        </fieldset>
         <div className={styles.entityMenuContainer}>
           {Object.values(entities).map(entity =>
             <div
