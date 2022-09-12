@@ -26,10 +26,10 @@ const defaultEntity: Entity = {
   id: '',
   name: '',
   currentPos: null,
-  movement: 0,
-  attack: 0,
-  health: 0,
-  defense: 0,
+  movement: 1,
+  attack: 1,
+  health: 100,
+  defense: 1,
   type: 'player',
   actions: ['Move', 'Attack', 'Select']
 }
@@ -227,8 +227,7 @@ const Home: NextPage = () => {
         </div>
         <h6>Available Units:</h6>
         <fieldset
-          className={cc([styles.entityContainer, styles.entityContainer_empty, selectedEntity === 'New Entity' && styles.entityContainer_selected])}
-          onClick={() => setSelectedEntity('New Entity')}
+          className={cc([styles.entityContainer, styles.entityContainer_empty])}
         >
           <div><input className={styles.entityInput} onChange={handleTempEntityChange} type={"text"} name={'id'} placeholder={'id'}/></div>
           <div><input className={styles.entityInput} onChange={handleTempEntityChange} type={"text"} name={'name'} placeholder={'name'}/></div>
