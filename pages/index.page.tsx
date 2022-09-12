@@ -29,7 +29,7 @@ const Home: NextPage = () => {
     tuCosita: {
       id: 'tuCosita',
       name: 'Chino',
-      currentPos: [7, 7],
+      currentPos: null,
       movement: 5,
       attack: 1,
       health: 30,
@@ -40,7 +40,7 @@ const Home: NextPage = () => {
     Luigi: {
       id: 'Luigi',
       name: 'Luigi',
-      currentPos: [5, 1],
+      currentPos: null,
       movement: 8,
       attack: 5,
       health: 30,
@@ -86,13 +86,13 @@ const Home: NextPage = () => {
   }
 
   const handleEntityAction = (action: Action, x: number, y: number, targetEntityId: string | null) => {
-    if(action === "Move") moveEntity(x, y)
+    if(action === "Move") moveEntity(x, y, targetEntityId)
     if(action === "Attack" && targetEntityId) attackEntity(targetEntityId)
     if(action === "Select") selectEntity(targetEntityId)
   }
 
-  const moveEntity = (x: number, y: number) => {
-    if(selectedEntity) setEntities({...entities, [selectedEntity]: {
+  const moveEntity = (x: number, y: number, targetEntityId: string | null) => {
+    if(selectedEntity && !targetEntityId) setEntities({...entities, [selectedEntity]: {
         ...entities[selectedEntity],
         currentPos: [x, y]
       }})
@@ -161,7 +161,6 @@ const Home: NextPage = () => {
                       selectedEntity &&
                       entities[selectedEntity] &&
                         <div className={styles.actionsContainer}>
-                            <div className={styles.actionsLabel}>Actions:</div>
                           {entities[selectedEntity].actions.map((action) => (
                             <div key={action} className={styles.actionButtonContainer}>
                               <button

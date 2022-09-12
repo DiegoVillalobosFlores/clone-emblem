@@ -18,8 +18,6 @@
 }
 
 .actionsContainer {
-  background-color: black;
-  border: 1px gold solid;
   position: absolute;
   margin-left: 34px;
   color: gold;
@@ -29,18 +27,17 @@
   width: 100%;
 }
 
-.actionsLabel {
-  padding: 8px;
-}
-
 .actionButton {
-  width: 100%;
+  width: 80px;
   padding: 10px;
   cursor: pointer;
-  border-left: none;
-  border-right: none;
-  border-top: 1px gold solid;
-  border-bottom: 1px gold solid;
+  border-radius: 5px;
+  margin-bottom: 5px;
+  transition: background-color 100ms ease-in-out;
+
+  &:hover {
+    background-color: cadetblue;
+  }
 }
 
 .tile {
