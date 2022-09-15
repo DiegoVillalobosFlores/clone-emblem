@@ -1,0 +1,15 @@
+.root {
+  border: 1px solid skyblue;
+  padding: 10px;
+  cursor: pointer;
+
+  &_selected {
+    color: black;
+    background-color: skyblue;
+  }
+
+  &_empty {
+    margin-bottom: 20px;
+    cursor: auto;
+  }
+}

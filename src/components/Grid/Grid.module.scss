@@ -1,0 +1,36 @@
+.gridContainer {
+  display: flex;
+  gap: 20px;
+}
+
+.tile {
+  height: 36px;
+  width: 36px;
+  border: 1px solid white;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 100ms ease-in-out;
+  display: flex;
+
+  &_container {
+    width: auto;
+    display: flex;
+  }
+
+  &_grass {
+    background-color: green;
+    &:hover {
+      background-color: white;
+      color: black;
+    }
+  }
+
+  &_water {
+    background-color: aqua;
+  }
+
+  &_selected {
+    color: black;
+    background-color: white;
+  }
+}

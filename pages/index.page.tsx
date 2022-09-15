@@ -1,42 +1,16 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import styles from '../styles/Home.module.scss'
-import cc from 'classcat'
-import {ChangeEvent, useMemo, useState} from "react";
-
-type Action = 'Move' | 'Attack' | 'Select'
-
-type Entity = {
-  id: string;
-  name: string;
-  currentPos: Position;
-  movement: number;
-  attack: number;
-  health: number;
-  defense: number;
-  type: string;
-  actions: Array<Action>
-}
-
-type Entities = Record<string, Entity>
-
-type Position = Array<number> | null
-
-const defaultEntity: Entity = {
-  id: '',
-  name: '',
-  currentPos: null,
-  movement: 1,
-  attack: 1,
-  health: 100,
-  defense: 1,
-  type: 'player',
-  actions: ['Move', 'Attack', 'Select']
-}
+import {useMemo, useState} from "react";
+import {Action, Entities, Entity, Position, Tile} from "../src/types";
+import {Grid} from "../src/components/Grid";
+import {ActionsMenu} from "../src/components/ActionsMenu";
+import {EntityMenu} from "../src/components/EntityMenu";
+import {EntityCreateForm} from "../src/components/EntityCreateForm";
 
 const Home: NextPage = () => {
-  const [selectedPos, setSelectedPos] = useState<Position>(null);
-  const [selectedEntity, setSelectedEntity] = useState<Entity["id"] | null>(null);
+  const [selectedTile, setSelectedTile] = useState<Tile | undefined>(undefined);
+  const [selectedEntity, setSelectedEntity] = useState<Entity | undefined>(undefined);
   const [entities, setEntities] = useState<Entities>({
     tuCosita: {
       id: 'tuCosita',
@@ -61,78 +35,61 @@ const Home: NextPage = () => {
       actions: ['Move', 'Attack', 'Select']
     }}
   )
-  const [tempEntity, setTempEntity] = useState<Partial<Entity>>(defaultEntity)
 
-  const handleTempEntityChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const property = e?.currentTarget?.name;
-    const value = e?.currentTarget?.value;
 
-    fillTempEntity(property, value)
+  const getEntityByPos = (position: Position) => {
+    return Object.values(entities).find(({id,currentPos}) => currentPos?.[0] === position?.[0] && currentPos?.[1] === position?.[1])
   }
 
-  const fillTempEntity = (property: string, value: string | number) => {
-    setTempEntity({
-      ...tempEntity,
-      [property]: value
-    })
-  }
-
-  const getEntityByPos = (x: number, y: number) => {
-    return Object.values(entities).find(({id,currentPos}) => currentPos?.[0] === x && currentPos[1] === y)
-  }
-
-  const grid = useMemo(() => {
-    const tempGrid: Array<Array<string | null>> = []
+  const grid: Array<Array<Tile>> = useMemo(() => {
+    const tempGrid: Array<Array<Tile>> = []
     for(let x = 0 ; x < 8 ; x++) {
       tempGrid[x] = []
       for(let y = 0 ; y < 8 ; y++) {
-        const entity = getEntityByPos(x, y)
-        if(entity) tempGrid[x][y] = entity.id
-        else tempGrid[x][y] = null
+        const entity = getEntityByPos([x,y])
+        if(entity) tempGrid[x][y] = {
+          position: [x,y],
+          entity
+        }
+        else tempGrid[x][y] = {
+          position: [x,y]
+        }
       }
     }
 
     return tempGrid
   }, [entities])
 
-  const handleGridClick = (yPos: number, xPos: number, entityId: Entity["id"] | null) => {
-    setSelectedPos([yPos, xPos])
-    if(!selectedEntity && entityId) setSelectedEntity(entityId)
+  const handleSelectEntity = (entity: Entity) => {
+    if(selectedEntity === entity) setSelectedEntity(undefined)
+    else setSelectedEntity(entity)
   }
 
-  const isSelectedPos = (yPos: number, xPos: number) => {
-    if(selectedPos === null) return false
-    if(yPos !== selectedPos[0]) return false;
-
-    return xPos === selectedPos[1];
+  const handleEntityAction = (action: Action) => {
+    if(action === "Move") moveEntity()
+    if(action === "Attack" && selectedTile?.entity) attackEntity()
+    if(action === "Select") selectEntity()
   }
 
-  const handleSelectEntity = (entityId: Entity["id"]) => {
-    if(selectedEntity === entityId) setSelectedEntity(null)
-    else setSelectedEntity(entityId)
-  }
-
-  const handleEntityAction = (action: Action, x: number, y: number, targetEntityId: string | null) => {
-    if(action === "Move") moveEntity(x, y, targetEntityId)
-    if(action === "Attack" && targetEntityId) attackEntity(targetEntityId)
-    if(action === "Select") selectEntity(targetEntityId)
-  }
-
-  const moveEntity = (x: number, y: number, targetEntityId: string | null) => {
-    if(selectedEntity && !targetEntityId) setEntities({...entities, [selectedEntity]: {
-        ...entities[selectedEntity],
-        currentPos: [x, y]
+  const moveEntity = () => {
+    if(selectedEntity && selectedTile && !selectedTile.entity) setEntities({...entities, [selectedEntity.id]: {
+        ...entities[selectedEntity.id],
+        currentPos: selectedTile.position
       }})
   }
 
-  const selectEntity = (targetEntityId: string | null) => {
-    setSelectedEntity(targetEntityId)
+  const selectEntity = () => {
+    if(selectedTile && selectedTile.entity) setSelectedEntity(entities[selectedTile?.entity?.id])
   }
 
-  const attackEntity = (targetEntityId: string) => {
-    if(selectedEntity && targetEntityId !== selectedEntity) {
-      const attackingEntity = entities[selectedEntity];
-      const targetEntity = entities[targetEntityId];
+  const attackEntity = () => {
+    if(
+      selectedEntity &&
+      selectedTile?.entity !== selectedEntity &&
+      selectedTile?.entity
+    ) {
+      const attackingEntity = entities[selectedEntity.id];
+      const targetEntity = entities[selectedTile.entity?.id];
 
       if(targetEntity.health === 0) return
 
@@ -147,27 +104,28 @@ const Home: NextPage = () => {
       )
 
       setEntities({...entities,
-        [targetEntityId]: {
-          ...entities[targetEntityId],
+        [selectedTile.entity.id]: {
+          ...entities[selectedTile.entity.id],
           health
         }})
     }
   }
 
-  const handleAddEntity = () => {
-    const newId = tempEntity.id;
+  const handleAddEntity = (entity: Entity) => {
+    const newId = entity.id;
 
     if(!newId || newId === '') return;
-    if(tempEntity.name === '') return;
-
-    const newEntity: Entity = tempEntity as Entity;
+    if(entity.name === '') return;
 
     setEntities({
       ...entities,
-      [newId]: newEntity
+      [newId]: entity
     })
+  }
 
-    setTempEntity(defaultEntity)
+  const handleGridClick = (tile: Tile) => {
+    setSelectedTile(tile)
+    if(!selectedEntity && tile.entity?.id) setSelectedEntity(entities[tile.entity.id])
   }
 
   return (
@@ -180,82 +138,27 @@ const Home: NextPage = () => {
 
       <main className={styles.main}>
         <div>
-          Selected Position: X:{selectedPos?.[0]}, Y:{selectedPos?.[1]}
+          Selected Position: X:{selectedTile?.position[0]}, Y:{selectedTile?.position[1]}
         </div>
         <div>
-          Selected Entity: {selectedEntity}
+          Selected Entity: {selectedEntity?.id}
         </div>
-        <div className={styles.gridContainer}>
-          <div>
-            {grid.map((row, rowIndex) => (
-              <div key={`grid_${rowIndex}_0`} className={cc([styles.tile, styles.tile_container])}>
-                {row.map((entityId, colIndex) => (
-                  <div
-                    key={`grid_${rowIndex}_${colIndex}`}
-                    className={cc([styles.tile, styles.tile_grass, isSelectedPos(rowIndex, colIndex) && styles.tile_selected])}
-                    onClick={() => handleGridClick(rowIndex, colIndex, entityId)}
-                  >
-                    {entityId && entities[entityId] && <>{entities[entityId].name[0].toUpperCase()}</>}
-                    {selectedPos?.[0] === rowIndex &&
-                      selectedPos[1] === colIndex &&
-                      selectedEntity &&
-                      entities[selectedEntity] &&
-                      selectedEntity !== entityId &&
-                      !entityId &&
-                        <>{entities[selectedEntity].name[0].toUpperCase()}</>
-                    }
-                    {selectedPos?.[0] === rowIndex &&
-                      selectedPos[1] === colIndex &&
-                      selectedEntity &&
-                      entities[selectedEntity] &&
-                        <div className={styles.actionsContainer}>
-                          {entities[selectedEntity].actions.map((action) => (
-                            <div key={action} className={styles.actionButtonContainer}>
-                              <button
-                                onClick={() => handleEntityAction(action, rowIndex, colIndex, entityId)}
-                                className={styles.actionButton}
-                              >{action}</button>
-                            </div>
-                          ))}
-                        </div>
-                    }
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-        <h6>Available Units:</h6>
-        <fieldset
-          className={cc([styles.entityContainer, styles.entityContainer_empty])}
+        <Grid
+          grid={grid}
+          selectedTile={selectedTile}
+          onGridClick={handleGridClick}
         >
-          <div><input className={styles.entityInput} onChange={handleTempEntityChange} type={"text"} name={'id'} placeholder={'id'}/></div>
-          <div><input className={styles.entityInput} onChange={handleTempEntityChange} type={"text"} name={'name'} placeholder={'name'}/></div>
-          <div><input className={styles.entityInput} onChange={handleTempEntityChange} type={"number"} name={'health'} max={100} min={0} placeholder={'health'}/></div>
-          <div><input className={styles.entityInput} onChange={handleTempEntityChange} type={"number"} name={'attack'} max={50} min={1} placeholder={'attack'}/></div>
-          <div><input className={styles.entityInput} onChange={handleTempEntityChange} type={"number"} name={'defense'} max={50} min={1} placeholder={'defense'}/></div>
-          <div><input className={styles.entityInput} onChange={handleTempEntityChange} type={"number"} name={'movement'} max={8} min={1} placeholder={'movement'}/></div>
-          <div>
-            <button onClick={handleAddEntity}>Add Entity</button>
-          </div>
-        </fieldset>
-        <div className={styles.entityMenuContainer}>
-          {Object.values(entities).map(entity =>
-            <div
-              key={entity.id}
-              className={cc([styles.entityContainer, selectedEntity === entity.id && styles.entityContainer_selected])}
-              onClick={() => handleSelectEntity(entity.id)}
-            >
-              <div>Id: {entity.id}</div>
-              <div>Name: {entity.name}</div>
-              <div>Health: {entity.health}</div>
-              <div>Attack: {entity.attack}</div>
-              <div>Defense: {entity.defense}</div>
-              <div>Movement: {entity.movement}</div>
-              <div>Current Pos: {entity.currentPos?.[0]},{entity.currentPos?.[1]}</div>
-            </div>
-          )}
-        </div>
+          {
+            selectedEntity &&
+            selectedTile &&
+              <ActionsMenu
+                  entity={selectedEntity}
+                  onActionClick={handleEntityAction}
+              />}
+        </Grid>
+        <h6>Available Units:</h6>
+        <EntityCreateForm onEntityCreate={handleAddEntity}/>
+        <EntityMenu selectedEntity={selectedEntity} entities={entities} onEntitySelected={handleSelectEntity}/>
       </main>
     </div>
   )

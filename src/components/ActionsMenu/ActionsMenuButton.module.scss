@@ -1,0 +1,12 @@
+.root {
+  width: 80px;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-bottom: 5px;
+  transition: background-color 100ms ease-in-out;
+
+  &:hover {
+    background-color: cadetblue;
+  }
+}
