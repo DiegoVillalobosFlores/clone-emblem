@@ -16,7 +16,7 @@ const Home: NextPage = () => {
       id: 'tuCosita',
       name: 'Chino',
       currentPos: null,
-      movement: 5,
+      movement: 2,
       attack: 1,
       health: 30,
       defense: 4,
@@ -47,12 +47,9 @@ const Home: NextPage = () => {
       tempGrid[x] = []
       for(let y = 0 ; y < 8 ; y++) {
         const entity = getEntityByPos([x,y])
-        if(entity) tempGrid[x][y] = {
+        tempGrid[x][y] = {
           position: [x,y],
           entity
-        }
-        else tempGrid[x][y] = {
-          position: [x,y]
         }
       }
     }
@@ -67,7 +64,7 @@ const Home: NextPage = () => {
 
   const handleEntityAction = (action: Action) => {
     if(action === "Move") moveEntity()
-    if(action === "Attack" && selectedTile?.entity) attackEntity()
+    if(action === "Attack") attackEntity()
     if(action === "Select") selectEntity()
   }
 
@@ -79,7 +76,7 @@ const Home: NextPage = () => {
   }
 
   const selectEntity = () => {
-    if(selectedTile && selectedTile.entity) setSelectedEntity(entities[selectedTile?.entity?.id])
+    if(selectedTile && selectedTile.entity) handleSelectEntity(entities[selectedTile?.entity?.id])
   }
 
   const attackEntity = () => {
@@ -154,7 +151,8 @@ const Home: NextPage = () => {
               <ActionsMenu
                   entity={selectedEntity}
                   onActionClick={handleEntityAction}
-              />}
+              />
+          }
         </Grid>
         <h6>Available Units:</h6>
         <EntityCreateForm onEntityCreate={handleAddEntity}/>

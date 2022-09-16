@@ -10,7 +10,7 @@ type Entity = {
   health: number;
   defense: number;
   type: string;
-  actions: Array<Action>
+  actions: Array<Action>;
 }
 
 export default Entity;

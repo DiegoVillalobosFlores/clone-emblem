@@ -1,6 +1,5 @@
 .gridContainer {
   display: flex;
-  gap: 20px;
 }
 
 .tile {
@@ -11,9 +10,11 @@
   text-align: center;
   transition: background-color 100ms ease-in-out;
   display: flex;
+  flex-direction: column;
 
   &_container {
     width: auto;
+    height: auto;
     display: flex;
   }
 
@@ -27,6 +28,10 @@
 
   &_water {
     background-color: aqua;
+  }
+
+  &_possible_movement {
+    background-color: cornflowerblue;
   }
 
   &_selected {
