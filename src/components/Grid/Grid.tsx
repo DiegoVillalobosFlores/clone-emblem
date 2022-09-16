@@ -24,28 +24,21 @@ export default function Grid({grid, selectedTile, onGridClick, children}: Props)
     let obstacle = 0
 
     if(yDiff === 0) {
-      for (let i = 0; i < xDiff; i++) {
-        const entityTile = grid[position[0] - i][position[1]]
-
-        if (entityTile.entity && entityTile.entity.id !== currentEntityId) obstacle = obstacle + 2
-      }
-
-      for (let i = xDiff; i < 0; i++) {
-        const entityTile = grid[position[0] - i][position[1]]
+      let index = xDiff < 0 ? xDiff : 0;
+      let end = xDiff < 0 ? 0 : xDiff
+      for (index; index <= end; index++){
+        const entityTile = grid[position[0] - index][position[1]]
 
         if (entityTile.entity && entityTile.entity.id !== currentEntityId) obstacle = obstacle + 2
       }
     }
 
     if(xDiff === 0) {
-      for (let i = 0; i < yDiff; i++) {
-        const entityTile = grid[position[0]][position[1] - i]
+      let index = yDiff < 0 ? yDiff : 0;
+      let end = yDiff < 0 ? 0 : yDiff
 
-        if (entityTile.entity && entityTile.entity.id !== currentEntityId) obstacle = obstacle + 2
-      }
-
-      for (let i = yDiff; i < 0; i++) {
-        const entityTile = grid[position[0]][position[1] - i]
+      for (index; index <= end; index++) {
+        const entityTile = grid[position[0]][position[1] - index]
 
         if (entityTile.entity && entityTile.entity.id !== currentEntityId) obstacle = obstacle + 2
       }

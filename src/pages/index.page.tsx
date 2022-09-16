@@ -2,11 +2,11 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 import styles from '../styles/Home.module.scss'
 import {useMemo, useState} from "react";
-import {Action, Entities, Entity, Position, Tile} from "../src/types";
-import {Grid} from "../src/components/Grid";
-import {ActionsMenu} from "../src/components/ActionsMenu";
-import {EntityMenu} from "../src/components/EntityMenu";
-import {EntityCreateForm} from "../src/components/EntityCreateForm";
+import {Action, Entities, Entity, Position, Tile} from "../types";
+import {Grid} from "../components/Grid";
+import {ActionsMenu} from "../components/ActionsMenu";
+import {EntityMenu} from "../components/EntityMenu";
+import {EntityCreateForm} from "../components/EntityCreateForm";
 
 const Home: NextPage = () => {
   const [selectedTile, setSelectedTile] = useState<Tile | undefined>(undefined);
@@ -130,7 +130,7 @@ const Home: NextPage = () => {
       <Head>
         <title>Clone Emblem</title>
         <meta name="description" content="Fire Emblem Clone" />
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/public/favicon.ico" />
       </Head>
 
       <main className={styles.main}>
