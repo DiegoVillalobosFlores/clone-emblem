@@ -21,7 +21,7 @@ export default function EntityMenuItem({entity, selectedEntity, onEntitySelected
       <div>Attack: {entity.attack}</div>
       <div>Defense: {entity.defense}</div>
       <div>Movement: {entity.movement}</div>
-      <div>Current Pos: {entity.currentPos?.[0]},{entity.currentPos?.[1]}</div>
+      <div>Current Pos: {entity.currentPos}</div>
     </div>
   )
 }

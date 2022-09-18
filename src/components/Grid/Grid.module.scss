@@ -1,5 +1,13 @@
 .gridContainer {
   display: flex;
+  flex-wrap: wrap;
+  width: calc(38px *8);
+}
+
+@keyframes borderSelect {
+  0%   {border-color: darkred}
+  //50%   {border: 6px rgba(red, 0.6) dashed;}
+  100% {border-color: red}
 }
 
 .tile {
@@ -21,8 +29,9 @@
   &_grass {
     background-color: green;
     &:hover {
-      background-color: white;
-      color: black;
+      border-width: 6px;
+      border-style: dashed;
+      animation: borderSelect 600ms infinite alternate-reverse ease-in-out;
     }
   }
 

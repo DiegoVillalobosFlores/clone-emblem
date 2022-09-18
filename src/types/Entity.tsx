@@ -2,7 +2,7 @@ import Position from "./Position";
 import Action from "./Action";
 
 type Entity = {
-  id: string;
+  id: number;
   name: string;
   currentPos: Position | null;
   movement: number;

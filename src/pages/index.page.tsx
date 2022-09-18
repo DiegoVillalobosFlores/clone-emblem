@@ -1,92 +1,119 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import styles from '../styles/Home.module.scss'
-import {useMemo, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {Action, Entities, Entity, Position, Tile} from "../types";
 import {Grid} from "../components/Grid";
 import {ActionsMenu} from "../components/ActionsMenu";
 import {EntityMenu} from "../components/EntityMenu";
 import {EntityCreateForm} from "../components/EntityCreateForm";
+import ndarray from "ndarray";
+import {NdArray} from "ndarray";
+// @ts-ignore
+import createPlanner from 'l1-path-finder';
+
+const defaultEntities: Entities = {
+  1: {
+    id: 1,
+    name: 'Chino',
+    currentPos: 8,
+    movement: 3,
+    attack: 1,
+    health: 30,
+    defense: 4,
+    type: 'player',
+    actions: ['Move', 'Attack', 'Select']
+  },
+  2: {
+    id: 2,
+    name: 'Luigi',
+    currentPos: 3 * 8,
+    movement: 8,
+    attack: 5,
+    health: 30,
+    defense: 2,
+    type: 'CPU',
+    actions: ['Move', 'Attack', 'Select']
+  },
+  3: {
+    id: 3,
+    name: 'Diego',
+    currentPos: 7 * 7,
+    movement: 1,
+    attack: 5,
+    health: 30,
+    defense: 2,
+    type: 'CPU',
+    actions: ['Move', 'Attack', 'Select']
+  }
+}
 
 const Home: NextPage = () => {
-  const [selectedTile, setSelectedTile] = useState<Tile | undefined>(undefined);
+  const [selectedTile, setSelectedTile] = useState<number | undefined>(undefined);
   const [selectedEntity, setSelectedEntity] = useState<Entity | undefined>(undefined);
-  const [entities, setEntities] = useState<Entities>({
-    tuCosita: {
-      id: 'tuCosita',
-      name: 'Chino',
-      currentPos: null,
-      movement: 2,
-      attack: 1,
-      health: 30,
-      defense: 4,
-      type: 'player',
-      actions: ['Move', 'Attack', 'Select']
-    },
-    Luigi: {
-      id: 'Luigi',
-      name: 'Luigi',
-      currentPos: null,
-      movement: 8,
-      attack: 5,
-      health: 30,
-      defense: 2,
-      type: 'CPU',
-      actions: ['Move', 'Attack', 'Select']
-    }}
-  )
-
+  const [binaryGrid, setBinaryGrid] = useState<NdArray | undefined>( undefined);
+  const [entities, setEntities] = useState<Entities>(defaultEntities);
+  const [planner, setPlanner] = useState<ReturnType<createPlanner> | undefined>(undefined)
+  const [path, setPath] = useState<Array<number>>([])
 
   const getEntityByPos = (position: Position) => {
-    return Object.values(entities).find(({id,currentPos}) => currentPos?.[0] === position?.[0] && currentPos?.[1] === position?.[1])
+    return Object.values(entities).find(({currentPos}) => currentPos === position)
   }
 
-  const grid: Array<Array<Tile>> = useMemo(() => {
-    const tempGrid: Array<Array<Tile>> = []
-    for(let x = 0 ; x < 8 ; x++) {
-      tempGrid[x] = []
-      for(let y = 0 ; y < 8 ; y++) {
-        const entity = getEntityByPos([x,y])
-        tempGrid[x][y] = {
-          position: [x,y],
-          entity
-        }
-      }
+  const grid: Array<Tile> = useMemo(() => {
+    const tempGrid: Array<Tile> = []
+    for(let x = 0 ; x < 8 * 8 ; x++) {
+      const entity = getEntityByPos(x)
+      if(!entity) tempGrid.push(0)
+      else tempGrid.push(entity.id)
     }
 
+    const dGrid = [...tempGrid];
+    if(selectedEntity && selectedEntity.currentPos) dGrid[selectedEntity.currentPos] = 0
+    const tempBinaryGrid = ndarray(dGrid, [8,8])
+    setBinaryGrid(tempBinaryGrid)
+
     return tempGrid
-  }, [entities])
+  }, [entities, selectedEntity])
+
+  useEffect(() => {
+    if(!binaryGrid) return
+    setPlanner(createPlanner(binaryGrid))
+  }, [binaryGrid])
 
   const handleSelectEntity = (entity: Entity) => {
     if(selectedEntity === entity) setSelectedEntity(undefined)
-    else setSelectedEntity(entity)
+    setSelectedEntity(entity)
   }
 
   const handleEntityAction = (action: Action) => {
     if(action === "Move") moveEntity()
     if(action === "Attack") attackEntity()
-    if(action === "Select") selectEntity()
+    if(action === "Select") selectEntity(selectedTile)
   }
 
   const moveEntity = () => {
-    if(selectedEntity && selectedTile && !selectedTile.entity) setEntities({...entities, [selectedEntity.id]: {
+    if(selectedEntity && selectedTile && !getEntityByPos(selectedTile)) setEntities({...entities, [selectedEntity.id]: {
         ...entities[selectedEntity.id],
-        currentPos: selectedTile.position
+        currentPos: selectedTile
       }})
   }
 
-  const selectEntity = () => {
-    if(selectedTile && selectedTile.entity) handleSelectEntity(entities[selectedTile?.entity?.id])
+  const selectEntity = (tile?: Tile) => {
+    if(!tile) return
+    const entity = getEntityByPos(tile);
+    if(entity) handleSelectEntity(entity)
   }
 
   const attackEntity = () => {
     if(
       selectedEntity &&
-      selectedTile?.entity !== selectedEntity &&
-      selectedTile?.entity
+      selectedTile &&
+      selectedTile !== 0 &&
+      selectedTile !== selectedEntity.currentPos
     ) {
       const attackingEntity = entities[selectedEntity.id];
-      const targetEntity = entities[selectedTile.entity?.id];
+      const targetEntity = entities[selectedTile];
 
       if(targetEntity.health === 0) return
 
@@ -101,8 +128,8 @@ const Home: NextPage = () => {
       )
 
       setEntities({...entities,
-        [selectedTile.entity.id]: {
-          ...entities[selectedTile.entity.id],
+        [selectedTile]: {
+          ...entities[selectedTile],
           health
         }})
     }
@@ -111,7 +138,7 @@ const Home: NextPage = () => {
   const handleAddEntity = (entity: Entity) => {
     const newId = entity.id;
 
-    if(!newId || newId === '') return;
+    if(!newId || newId === 0) return;
     if(entity.name === '') return;
 
     setEntities({
@@ -122,7 +149,53 @@ const Home: NextPage = () => {
 
   const handleGridClick = (tile: Tile) => {
     setSelectedTile(tile)
-    if(!selectedEntity && tile.entity?.id) setSelectedEntity(entities[tile.entity.id])
+    // console.log(selectedEntity, tile)
+    if(tile) selectEntity(tile)
+  }
+
+  const handleGridHover = (tile: Tile) => {
+    if(!selectedTile || !binaryGrid || !planner) return
+    const tempPath: Array<number> = []
+    const tileCoord = [Math.floor(tile / 8), tile % 8]
+    planner.search(Math.floor(selectedTile / 8), selectedTile % 8,tileCoord[0], tileCoord[1], tempPath)
+
+    let coordPath = []
+
+    while (tempPath.length > 0) {
+      const currentCord = [tempPath.shift(), tempPath.shift()];
+      const nextCoord = [tempPath[0], tempPath[1]]
+
+      if(currentCord[0] === undefined) break;
+      if(currentCord[1] === undefined) break;
+
+      const coord = currentCord[0] * 8 + currentCord[1] % 8
+      coordPath.push(coord)
+
+      const xDiff = currentCord[0] - nextCoord[0];
+      const yDiff = currentCord[1] - nextCoord[1];
+
+      if(xDiff === 0) {
+        for(let i = yDiff; i < 0 ; i++) {
+          coordPath.push(coord - i)
+        }
+
+        for(let i = 0; i < yDiff ; i++) {
+          coordPath.push(coord - i)
+        }
+      }
+
+      if(yDiff === 0) {
+        for(let i = xDiff; i < 0 ; i++) {
+          coordPath.push(coord - (i * 8))
+        }
+
+        for(let i = 0; i < xDiff ; i++) {
+          coordPath.push(coord - (i * 8))
+        }
+      }
+    }
+
+    setPath(coordPath)
   }
 
   return (
@@ -135,7 +208,7 @@ const Home: NextPage = () => {
 
       <main className={styles.main}>
         <div>
-          Selected Position: X:{selectedTile?.position[0]}, Y:{selectedTile?.position[1]}
+          Selected Position: X:{}
         </div>
         <div>
           Selected Entity: {selectedEntity?.id}
@@ -144,6 +217,9 @@ const Home: NextPage = () => {
           grid={grid}
           selectedTile={selectedTile}
           onGridClick={handleGridClick}
+          onGridHover={handleGridHover}
+          path={path}
+          entities={entities}
         >
           {
             selectedEntity &&

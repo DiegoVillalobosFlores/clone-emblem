@@ -1,3 +1,3 @@
-type Position = [number, number];
+type Position = number;
 
 export default Position

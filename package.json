@@ -10,12 +10,15 @@
   },
   "dependencies": {
     "classcat": "5.0.4",
+    "l1-path-finder": "1.0.0",
+    "ndarray": "1.0.19",
     "next": "12.3.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "sass": "1.54.9"
   },
   "devDependencies": {
+    "@types/ndarray": "1.0.11",
     "@types/node": "18.7.16",
     "@types/react": "18.0.19",
     "@types/react-dom": "18.0.6",
