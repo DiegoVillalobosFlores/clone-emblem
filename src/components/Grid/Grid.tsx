@@ -42,12 +42,14 @@ export default function Grid({
               styles.tile,
               styles.tile_grass,
               path.includes(x) && styles.tile_possible_movement,
-              isSelectedPos(x) && styles.tile_selected])}
+              path.at(-1) === x && styles.tile_selected,
+              isSelectedPos(x) && styles.tile_selected
+            ])}
             onClick={() => onGridClick(x)}
             onMouseOver={() => onGridHover(x)}
           >
             {entities[tile] && <EntityPortrait entity={entities[tile]} />}
-            {path.at(-1) === x && children}
+            {selectedTile === x && children}
           </div>
         </div>
       ))}

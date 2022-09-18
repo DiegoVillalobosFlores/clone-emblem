@@ -4,7 +4,7 @@ import EntityMenuItem from "./EntityMenuItem";
 
 type Props = {
   entities: Entities;
-  selectedEntity?: Entity;
+  selectedEntity?: Entity['id'];
   onEntitySelected: (entity: Entity) => void
 }
 

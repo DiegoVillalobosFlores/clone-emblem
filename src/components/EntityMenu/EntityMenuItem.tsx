@@ -4,7 +4,7 @@ import {Entity} from "../../types";
 
 type Props = {
   entity: Entity;
-  selectedEntity?: Entity;
+  selectedEntity?: Entity["id"];
   onEntitySelected: (entity: Entity) => void
 }
 
@@ -12,7 +12,7 @@ export default function EntityMenuItem({entity, selectedEntity, onEntitySelected
   return (
     <div
       key={entity.id}
-      className={cc([styles.root, selectedEntity?.id === entity.id && styles.root_selected])}
+      className={cc([styles.root, selectedEntity === entity.id && styles.root_selected])}
       onClick={() => onEntitySelected(entity)}
     >
       <div>Id: {entity.id}</div>
