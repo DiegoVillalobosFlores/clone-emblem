@@ -1,7 +1,7 @@
 import {Entity} from "../types";
 
 export const defaultEntity: Entity = {
-  id: '',
+  id: -1,
   name: '',
   currentPos: null,
   movement: 1,
