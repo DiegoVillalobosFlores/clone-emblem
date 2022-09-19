@@ -43,8 +43,14 @@
     background-color: cornflowerblue;
   }
 
-  &_selected {
-    color: black;
+  &_last_movement {
     background-color: white;
+    color: black;
+  }
+
+  &_selected {
+    border-width: 6px;
+    border-style: dashed;
+    animation: borderSelect 600ms infinite alternate-reverse ease-in-out;
   }
 }

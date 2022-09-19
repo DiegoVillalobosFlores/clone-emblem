@@ -9,5 +9,10 @@ export const defaultEntity: Entity = {
   health: 100,
   defense: 1,
   type: 'player',
-  actions: ['Move', 'Attack', 'Select']
+  actions: {
+    Move: true,
+    Attack: true,
+    Select: true,
+  },
+  currentPath: []
 }

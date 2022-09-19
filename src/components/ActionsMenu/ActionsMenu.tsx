@@ -10,11 +10,11 @@ type Props = {
 export default function ActionsMenu({entity, onActionClick}: Props) {
   return (
     <div className={styles.root}>
-      {entity && entity.actions.map(action => (
+      {entity && Object.keys(entity.actions).map(action => (
         <div
           key={action}
           className={styles.actionButtonContainer}
-          onClick={() => onActionClick(action)}
+          onClick={() => onActionClick(action as Action)}
         >
           <ActionsMenuButton>
             {action}

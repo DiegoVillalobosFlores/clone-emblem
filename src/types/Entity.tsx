@@ -10,7 +10,8 @@ type Entity = {
   health: number;
   defense: number;
   type: string;
-  actions: Array<Action>;
+  actions: Record<Action, boolean>;
+  currentPath: Array<Position>
 }
 
 export default Entity;

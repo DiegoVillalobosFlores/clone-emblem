@@ -22,6 +22,7 @@ export default function EntityMenuItem({entity, selectedEntity, onEntitySelected
       <div>Defense: {entity.defense}</div>
       <div>Movement: {entity.movement}</div>
       <div>Current Pos: {entity.currentPos}</div>
+      <div>Current Path: {entity.currentPath.map(tile => <span key={`entity_${entity.id}_path_${tile}`}>{tile} </span>)}</div>
     </div>
   )
 }

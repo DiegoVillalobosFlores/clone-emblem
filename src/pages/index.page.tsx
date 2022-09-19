@@ -22,7 +22,12 @@ const defaultEntities: Entities = {
     health: 30,
     defense: 4,
     type: 'player',
-    actions: ['Move', 'Attack', 'Select']
+    actions: {
+      Move: true,
+      Attack: true,
+      Select: true,
+    },
+    currentPath: [1,3]
   },
   2: {
     id: 2,
@@ -33,7 +38,12 @@ const defaultEntities: Entities = {
     health: 30,
     defense: 2,
     type: 'CPU',
-    actions: ['Move', 'Attack', 'Select']
+    actions: {
+      Move: true,
+      Attack: true,
+      Select: true,
+    },
+    currentPath: []
   },
   3: {
     id: 3,
@@ -44,8 +54,17 @@ const defaultEntities: Entities = {
     health: 30,
     defense: 2,
     type: 'CPU',
-    actions: ['Move', 'Attack', 'Select']
+    actions: {
+      Move: true,
+      Attack: true,
+      Select: true,
+    },
+    currentPath: []
   }
+}
+
+const getEntityByPos = (position: Position, entities: Entities) => {
+  return Object.values(entities).find(({currentPos}) => currentPos === position)
 }
 
 const Home: NextPage = () => {
@@ -54,16 +73,11 @@ const Home: NextPage = () => {
   const [binaryGrid, setBinaryGrid] = useState<NdArray | undefined>( undefined);
   const [entities, setEntities] = useState<Entities>(defaultEntities);
   const [planner, setPlanner] = useState<ReturnType<createPlanner> | undefined>(undefined)
-  const [path, setPath] = useState<Array<number>>([])
-
-  const getEntityByPos = (position: Position) => {
-    return Object.values(entities).find(({currentPos}) => currentPos === position)
-  }
 
   const grid: Array<Tile> = useMemo(() => {
     const tempGrid: Array<Tile> = []
     for(let x = 0 ; x < 8 * 8 ; x++) {
-      const entity = getEntityByPos(x)
+      const entity = getEntityByPos(x, entities)
       if(!entity) tempGrid.push(0)
       else tempGrid.push(entity.id)
     }
@@ -96,18 +110,21 @@ const Home: NextPage = () => {
   }
 
   const moveEntity = () => {
-    setPath([])
     if(!selectedEntityId) return
     const selectedEntity = entities[selectedEntityId]
-    if(selectedEntity && selectedTile && !getEntityByPos(selectedTile)) setEntities({...entities, [selectedEntity.id]: {
+    if(selectedEntity && selectedTile && !getEntityByPos(selectedTile, entities)) setEntities({...entities, [selectedEntity.id]: {
         ...entities[selectedEntity.id],
         currentPos: selectedTile
       }})
+
+    setSelectedTile(undefined)
+    setSelectedEntityId(undefined)
   }
+
 
   const selectEntity = (tile?: Tile) => {
     if(!tile) return
-    const entity = getEntityByPos(tile);
+    const entity = getEntityByPos(tile, entities);
     if(entity) handleSelectEntity(entity)
   }
 
@@ -122,7 +139,7 @@ const Home: NextPage = () => {
       selectedTile !== selectedEntity.currentPos
     ) {
       const attackingEntity = entities[selectedEntity.id];
-      const targetEntity = getEntityByPos(selectedTile);
+      const targetEntity = getEntityByPos(selectedTile, entities);
 
       if(!targetEntity) return;
 
@@ -160,8 +177,16 @@ const Home: NextPage = () => {
 
   const handleGridClick = (tile: Tile) => {
     setSelectedTile(tile)
-    const entity = getEntityByPos(tile);
+    const entity = getEntityByPos(tile, entities);
     if(tile && !selectedEntityId && entity) setSelectedEntityId(entity.id)
+    if(entity && selectedEntityId) setEntities({...entities,
+    [selectedEntityId]: {
+      ...entities[selectedEntityId],
+      actions: {
+        ...entities[selectedEntityId].actions,
+        Move: !entities[selectedEntityId].actions.Move
+      }
+    }})
   }
 
   const handleGridHover = (tile: Tile) => {
@@ -172,7 +197,7 @@ const Home: NextPage = () => {
     const tileCoord = [Math.floor(tile / 8), tile % 8]
     planner.search(Math.floor(selectedEntity.currentPos / 8), selectedEntity.currentPos % 8, tileCoord[0], tileCoord[1], tempPath)
 
-    let coordPath = []
+    let coordPath: Array<number> = []
 
     while (tempPath.length > 0) {
       const currentCord = [tempPath.shift(), tempPath.shift()];
@@ -182,33 +207,41 @@ const Home: NextPage = () => {
       if(currentCord[1] === undefined) break;
 
       const coord = currentCord[0] * 8 + currentCord[1] % 8
-      coordPath.push(coord)
+      if(coordPath.length <= selectedEntity.movement)coordPath.push(coord)
 
       const xDiff = currentCord[0] - nextCoord[0];
       const yDiff = currentCord[1] - nextCoord[1];
 
       if(xDiff === 0) {
-        for(let i = yDiff; i < 0 ; i++) {
-          coordPath.push(coord - i)
+        for(let i = 0; i > yDiff ; i--) {
+          if(coordPath.at(-1) !== coord - i && coordPath.length <= selectedEntity.movement)
+            coordPath.push(coord - i)
         }
 
         for(let i = 0; i < yDiff ; i++) {
-          coordPath.push(coord - i)
+          if(coordPath.at(-1) !== coord - i && coordPath.length <= selectedEntity.movement)
+            coordPath.push(coord - i)
         }
       }
 
-      if(yDiff === 0) {
-        for(let i = xDiff; i < 0 ; i++) {
-          coordPath.push(coord - (i * 8))
+      if(yDiff === 0 ) {
+        for(let i = 0; i > xDiff ; i--) {
+          if(coordPath.at(-1) !== coord - i && coordPath.length <= selectedEntity.movement)
+            coordPath.push(coord - (i * 8))
         }
 
         for(let i = 0; i < xDiff ; i++) {
-          coordPath.push(coord - (i * 8))
+          if(coordPath.at(-1) !== coord - i && coordPath.length <= selectedEntity.movement)
+            coordPath.push(coord - (i * 8))
         }
       }
+      // if(coordPath.length > selectedEntity.movement) break
     }
 
-    setPath(coordPath)
+    setEntities({...entities, [selectedEntityId]: {
+      ...entities[selectedEntityId],
+        currentPath: coordPath
+      }})
   }
 
   return (
@@ -231,7 +264,7 @@ const Home: NextPage = () => {
           selectedTile={selectedTile}
           onGridClick={handleGridClick}
           onGridHover={handleGridHover}
-          path={path}
+          path={selectedEntityId && entities[selectedEntityId] ? entities[selectedEntityId].currentPath : []}
           entities={entities}
         >
           {

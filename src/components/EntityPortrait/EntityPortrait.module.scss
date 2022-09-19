@@ -1,3 +1,9 @@
+@keyframes activeGrow {
+  0% {transform: scale(80%)}
+  100% {transform: scale(120%)}
+}
+
 .root {
   margin: auto;
+  animation: activeGrow 700ms ease-in-out alternate infinite;
 }

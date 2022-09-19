@@ -42,7 +42,7 @@ export default function Grid({
               styles.tile,
               styles.tile_grass,
               path.includes(x) && styles.tile_possible_movement,
-              path.at(-1) === x && styles.tile_selected,
+              path.at(-1) === x && styles.tile_last_movement,
               isSelectedPos(x) && styles.tile_selected
             ])}
             onClick={() => onGridClick(x)}
