@@ -235,7 +235,6 @@ const Home: NextPage = () => {
             coordPath.push(coord - (i * 8))
         }
       }
-      // if(coordPath.length > selectedEntity.movement) break
     }
 
     setEntities({...entities, [selectedEntityId]: {
